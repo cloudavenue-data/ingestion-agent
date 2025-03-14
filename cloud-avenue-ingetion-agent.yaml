@@ -1,0 +1,88 @@
+# -----------------------------------------------------------------------------
+# Secret: BigQuery Credentials
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloud-avenue-bigquery-credentials
+type: Opaque
+data:
+  # Replace the value below with the base64-encoded contents of your bigquery.json file.
+  # Example to generate: `cat bigquery.json | base64 -w 0`
+  bigquery.json: <PLACEHOLDER>
+---
+# -----------------------------------------------------------------------------
+# Secret: Sensitive Settings
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloud-avenue-ingestion-secrets
+type: Opaque
+data:
+  # Replace with your base64-encoded JWT token.
+  # Encode it using: 'echo -n "your-jwt-token" | base64 -w 0'
+  jwt_token: <PLACEHOLDER>
+---
+# -----------------------------------------------------------------------------
+# ConfigMap: Cloud-Avenue Ingestion Non-Sensitive Configuration
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloud-avenue-ingestion-config
+data:
+  # Comma-separated list of connectors to ingest
+  CONNECTORS: "bigquery"
+  # BigQuery-specific configuration:
+  BIGQUERY_SERVICE_NAME: "my-bigquery-service"
+  BIGQUERY_GCP_PROJECT_ID: "my-bigquery-project"
+  # Additional connector-specific configuration can be added here.
+---
+# -----------------------------------------------------------------------------
+# CronJob: Cloud-Avenue Ingestion CronJob
+# -----------------------------------------------------------------------------
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cloud-avenue-ingestion-cronjob
+spec:
+  # Schedule: run every 15 minutes
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: cloud-avenue-ingestion
+              image: cadata/ingestion-agent:latest
+              imagePullPolicy: IfNotPresent
+              env:
+                # Load sensitive JWT token from secret
+                - name: JWT_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: cloud-avenue-ingestion-secrets
+                      key: jwt_token
+                # Set the BigQuery credentials file path (mounted as a volume)
+                - name: BIGQUERY_GCP_CONFIG_PATH
+                  value: "/etc/bigquery/bigquery.json"
+              envFrom:
+                # Load additional non-sensitive configuration from ConfigMap
+                - configMapRef:
+                    name: cloud-avenue-ingestion-config
+              volumeMounts:
+                # Mount BigQuery credentials from secret into the container
+                - name: bigquery-creds
+                  mountPath: /etc/bigquery
+                  readOnly: true
+          volumes:
+            - name: bigquery-creds
+              secret:
+                secretName: cloud-avenue-bigquery-credentials
+
+
