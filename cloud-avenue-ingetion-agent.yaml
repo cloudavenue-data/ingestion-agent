@@ -59,7 +59,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: cloud-avenue-ingestion
-              image: cadata/ingestion-agent:latest
+              image: cadata/ingestion-agent:1.0.3
               imagePullPolicy: IfNotPresent
               env:
                 # Load sensitive JWT token from secret
