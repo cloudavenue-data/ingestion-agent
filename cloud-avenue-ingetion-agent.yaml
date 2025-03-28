@@ -20,9 +20,9 @@ metadata:
   name: cloud-avenue-ingestion-secrets
 type: Opaque
 data:
-  # Replace with your base64-encoded JWT token.
-  # Encode it using: 'echo -n "your-jwt-token" | base64 -w 0'
-  jwt_token: <PLACEHOLDER>
+  # Replace with your base64-encoded Cloud Avenue API key
+  # Encode it using: 'echo -n "your-api-key" | base64'
+  cloudavenue_api_key: <PLACEHOLDER>
 ---
 # -----------------------------------------------------------------------------
 # ConfigMap: Cloud-Avenue Ingestion Non-Sensitive Configuration
@@ -59,15 +59,15 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: cloud-avenue-ingestion
-              image: cadata/ingestion-agent:1.0.3
+              image: cadata/ingestion-agent:1.1.0
               imagePullPolicy: IfNotPresent
               env:
-                # Load sensitive JWT token from secret
-                - name: JWT_TOKEN
+                # Load Cloud Avenue API key from secret
+                - name: CLOUDAVENUE_API_KEY
                   valueFrom:
                     secretKeyRef:
                       name: cloud-avenue-ingestion-secrets
-                      key: jwt_token
+                      key: cloudavenue_api_key
                 # Set the BigQuery credentials file path (mounted as a volume)
                 - name: BIGQUERY_GCP_CONFIG_PATH
                   value: "/etc/bigquery/bigquery.json"
