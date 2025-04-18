@@ -38,6 +38,7 @@ data:
   BIGQUERY_SERVICE_NAME: "my-bigquery-service"
   BIGQUERY_GCP_PROJECT_ID: "my-bigquery-project"
   # Additional connector-specific configuration can be added here.
+  # BIGQUERY_SCHEMA_FILTER_EXCLUDES: "public,information_schema"
 ---
 # -----------------------------------------------------------------------------
 # CronJob: Cloud-Avenue Ingestion CronJob
@@ -59,7 +60,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: cloud-avenue-ingestion
-              image: cadata/ingestion-agent:1.1.0
+              image: cadata/ingestion-agent:1.2.0
               imagePullPolicy: IfNotPresent
               env:
                 # Load Cloud Avenue API key from secret
