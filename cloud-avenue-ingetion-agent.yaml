@@ -60,7 +60,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: cloud-avenue-ingestion
-              image: cadata/ingestion-agent:1.2.0
+              image: cadata/ingestion-agent:1.3.0
               imagePullPolicy: IfNotPresent
               env:
                 # Load Cloud Avenue API key from secret
@@ -85,5 +85,6 @@ spec:
             - name: bigquery-creds
               secret:
                 secretName: cloud-avenue-bigquery-credentials
+
 
 
